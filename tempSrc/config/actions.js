@@ -1,9 +1,10 @@
 export const UPDATE_SCREEN_SIZE = "UPDATE_SCREEN_SIZE";
-export const updateScreenSize = (width, height) => ({
+export const updateScreenSize = (width, height, ratio) => ({
   type: UPDATE_SCREEN_SIZE,
   payload: {
     width: width,
-    height: height
+    height: height,
+    ratio : ratio
   }
 });
 

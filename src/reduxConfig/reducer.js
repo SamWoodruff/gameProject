@@ -1,5 +1,3 @@
-import { createStore } from "redux";
-
 import {
   UPDATE_SCREEN_SIZE,
   UPDATE_KEY_VALUES,
@@ -7,19 +5,21 @@ import {
   UPDATE_CURRENT_SCORE,
   UPDATE_ASTEROID_COUNT
 } from "./actions";
+
 const initialState = {
   screen: {
     width: window.innerWidth,
-    height: window.innerHeight
+    height: window.innerHeight,
+    ratio: window.devicePixelRatio || 1,
   },
-  asteroidCount: 5,
+  asteroidCount: 3,
   currentScore: 0,
   topScore: localStorage["topscore"] || 0,
-  inGame: false
+  inGame: false,
+  blasters: ['quickshot','spreadShot','doubleShot','wrapShot']
 };
 
 export const rootReducer = (state = initialState, action) => {
-  console.log(action.type);
   switch (action.type) {
     case UPDATE_SCREEN_SIZE:
       return {
@@ -50,7 +50,3 @@ export const rootReducer = (state = initialState, action) => {
       return { ...state };
   }
 };
-export const store = createStore(
-  rootReducer,
-  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
-);

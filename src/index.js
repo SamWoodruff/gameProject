@@ -1,13 +1,7 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import "./index.css";
+import React from 'react';
+import { render } from 'react-dom';
+import  ViewPort  from './ViewPort/';
 import { Provider } from "react-redux";
-import { store } from "./config/store";
-import ViewPort from './features/ViewPort'
+import { store } from "./reduxConfig/store";
 
-ReactDOM.render(
-  <Provider store={store}>
-    <ViewPort />
-  </Provider>,
-  document.getElementById("root")
-);
+render(<Provider store={store}><ViewPort /></Provider>, document.getElementById('root'));

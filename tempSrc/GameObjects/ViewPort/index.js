@@ -55,10 +55,17 @@ class ViewPort extends React.Component {
     });
   }
 
+  componentWillUnmount(){
+    window.removeEventListener('keyup',this.handleKeys);
+    window.removeEventListener('keydown',this.handleKeys);
+    window.removeEventListener('resize',this.handleKeys)
+  }
+
   updateGame = () => {
     const context = this.state.context;
     context.save();
 
+    context.scale(1, 1);
     context.fillStyle = "#000";
     context.fillRect(0, 0, this.props.screen.width, this.props.screen.heigth);
 
@@ -82,7 +89,7 @@ class ViewPort extends React.Component {
   };
 
   handleResize() {
-    this.props.updateScreenSize(window.innerWidth, window.innerHeight);
+    this.props.updateScreenSize(window.innerWidth, window.innerHeight, window.devicePixelRatio || 1);
   }
 
   createObject = (object, objectType) => {
@@ -127,6 +134,7 @@ class ViewPort extends React.Component {
             player.position.y + 60
           )
         },
+        size:10,
         create: this.createObject.bind(this),
         addScore: this.addScore.bind(this)
       });
@@ -136,7 +144,7 @@ class ViewPort extends React.Component {
 
   updateDisplayedObjects(items, group) {
     items.forEach((item,index)=>{
-      item.delete ? this[group].splice(index, 1) : items[index].render(this.state)
+      item.delete ? this[group].splice(index, 1) : items[index].lifeSpan(this.state)
     })
   }
 
@@ -178,7 +186,10 @@ class ViewPort extends React.Component {
         <span className="controls">
           To Move: [◄][▲][▼][►] To Shoot: [SPACE]
         </span>
-        <canvas ref="canvas" />
+        <canvas ref="canvas">
+          width={this.props.screen.width}
+          height={this.props.screen.height}
+        </canvas>
       </div>
     );
   }
@@ -193,8 +204,8 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-  updateScreenSize: (width, height) =>
-    dispatch(updateScreenSize(width, height)),
+  updateScreenSize: (width, height, ratio) =>
+    dispatch(updateScreenSize(width, height, ratio)),
   updateKeyValues: keys => dispatch(updateKeyValues(keys)),
   updateGameState: gameState => dispatch(updateGameState(gameState)),
   updateCurrentScore: score => dispatch(updateCurrentScore(score)),
