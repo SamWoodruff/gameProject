@@ -1,0 +1,6 @@
+.save():
+The CanvasRenderingContext2D.save() 
+method of the Canvas 2D API saves the entire state 
+of the canvas by pushing the current state onto a stack.
+
+.fillstyle():
