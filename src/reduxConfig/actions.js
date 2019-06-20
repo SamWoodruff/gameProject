@@ -37,3 +37,15 @@ export const updateAsteroidCount = count => ({
   type: UPDATE_ASTEROID_COUNT,
   payload: count
 });
+
+export const CHANGE_SHIP = "CHANGE_SHIP";
+export const changeShip = ship =>({
+  type: CHANGE_SHIP,
+  payload: ship
+})
+
+export const UPDATE_PLAYER_NAME = "UPDATE_PLAYER_NAME"
+export const updatePlayerName = name =>({
+  type:UPDATE_PLAYER_NAME,
+  payload:name
+})

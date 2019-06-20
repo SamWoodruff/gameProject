@@ -38,7 +38,7 @@ class SpaceShip {
 
   display = state => {
     if (state.keys.up) {
-      this.accelerate(1);
+      this.accelerate(.5);
     }
     if (state.keys.left) {
       this.rotate("LEFT");
@@ -73,20 +73,25 @@ class SpaceShip {
 
     const context = state.context;
     context.save();
-    context.translate(this.position.x, this.position.y);
+    
+    let sprite = new Image();
+    sprite.src = store.getState().selectedShip;
+    context.translate(
+      this.position.x,
+      this.position.y
+    );
     context.rotate((this.rotation * Math.PI) / 180);
-    context.strokeStyle = "blue";
-    context.fillStyle = "blue";
-    context.lineWidth = 2;
-    context.beginPath();
-    context.moveTo(0, -15);
-    context.lineTo(1,10);
-    context.lineTo(10,5);
-    context.lineTo(5,-10);
-    context.lineTo(5,10);
-    context.closePath();
-    context.fill();
-    context.stroke();
+    context.drawImage(
+      sprite,
+      0,
+      0,
+      sprite.width,
+      sprite.height,
+      -sprite.width / 2,
+      -sprite.height / 2,
+      sprite.width,
+      sprite.height
+    );
     context.restore();
   };
 }

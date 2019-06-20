@@ -3,8 +3,13 @@ import {
   UPDATE_KEY_VALUES,
   UPDATE_GAME_STATE,
   UPDATE_CURRENT_SCORE,
-  UPDATE_ASTEROID_COUNT
+  UPDATE_ASTEROID_COUNT,
+  CHANGE_SHIP,
+  UPDATE_PLAYER_NAME
 } from "./actions";
+
+//REMOVE:
+import ship1 from '../SpaceShip/ship2.png'
 
 const initialState = {
   screen: {
@@ -16,6 +21,8 @@ const initialState = {
   currentScore: 0,
   topScore: localStorage["topscore"] || 0,
   inGame: false,
+  selectedShip: ship1,
+  playerName:'',
   blasters: ['quickshot','spreadShot','doubleShot','wrapShot']
 };
 
@@ -45,6 +52,16 @@ export const rootReducer = (state = initialState, action) => {
       return{
         ...state,
         asteroidCount:action.payload
+      }
+    case CHANGE_SHIP:
+      return{
+        ...state,
+        selectedShip: action.payload
+      }
+    case UPDATE_PLAYER_NAME:
+      return{
+        ...state,
+        playerName: action.payload
       }
     default:
       return { ...state };
