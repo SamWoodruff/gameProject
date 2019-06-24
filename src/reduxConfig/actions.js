@@ -26,11 +26,11 @@ export const updateCurrentScore = score => ({
   payload: score
 });
 
-export const UPDATE_TOP_SCORE = "UPDATE_TOP_SCORE"
-export const updateTopScore = score =>({
-  type:UPDATE_TOP_SCORE,
+export const UPDATE_TOP_SCORE = "UPDATE_TOP_SCORE";
+export const updateTopScore = score => ({
+  type: UPDATE_TOP_SCORE,
   payload: score
-})
+});
 
 export const UPDATE_ASTEROID_COUNT = "UPDATE_ASTEROID_COUNT";
 export const updateAsteroidCount = count => ({
@@ -39,13 +39,19 @@ export const updateAsteroidCount = count => ({
 });
 
 export const CHANGE_SHIP = "CHANGE_SHIP";
-export const changeShip = ship =>({
+export const changeShip = ship => ({
   type: CHANGE_SHIP,
   payload: ship
-})
+});
 
-export const UPDATE_PLAYER_NAME = "UPDATE_PLAYER_NAME"
-export const updatePlayerName = name =>({
-  type:UPDATE_PLAYER_NAME,
-  payload:name
-})
+export const UPDATE_PLAYER_NAME = "UPDATE_PLAYER_NAME";
+export const updatePlayerName = name => ({
+  type: UPDATE_PLAYER_NAME,
+  payload: name
+});
+
+export const LOAD_PREVIOUS_GAME = "LOAD_PREVIOUS_GAME";
+export const loadPreviousGame = state => ({
+  type: LOAD_PREVIOUS_GAME,
+  payload: state
+});

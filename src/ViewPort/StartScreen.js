@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, {useState} from "react";
 import ShipSelector from "./ShipSelector";
+import LoadGame from './LoadMenu'
 import { connect } from "react-redux";
-import { updatePlayerName } from "../reduxConfig/actions";
+import { updatePlayerName, updateGameState } from "../reduxConfig/actions";
 
-const StartScreen = ({ onClick, playerName, updatePlayerName }) => {
-  const [inputField, setInputField] = useState('');
-  console.log('here')
+const StartScreen = ({ onClick, playerName, updatePlayerName,loadGame }) => {
+  const [showLoadMenu, setShowLoadMenu] = useState(false);
   return (
     <div className="menu">
       Start Screen
@@ -16,10 +16,13 @@ const StartScreen = ({ onClick, playerName, updatePlayerName }) => {
       <br />
       <input
         type="text"
-        value={inputField}
-        onChange={() => setInputField('here')}
+        value={playerName}
+        onChange={e => updatePlayerName(e.target.value)}
       />
       <ShipSelector />
+      <button onClick={()=>setShowLoadMenu(!showLoadMenu)}>Load</button>
+      {showLoadMenu ? <LoadGame onClick={loadGame}/> : null}
+      <br/>
       <button onClick={() => onClick()}>Start</button>
     </div>
   );
@@ -30,7 +33,8 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-  updatePlayerName: name => dispatch(updatePlayerName(name))
+  updatePlayerName: name => dispatch(updatePlayerName(name)),
+  updateGameState: gameState => dispatch(updateGameState(gameState))
 });
 
 export default connect(

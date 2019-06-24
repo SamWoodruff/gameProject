@@ -5,6 +5,8 @@ import { connect } from "react-redux";
 import { randomNumBetweenExcluding } from "../math";
 import PauseMenu from "./PauseMenu";
 import StartScreen from "./StartScreen";
+import EndGameMenu from "./EndGameMenu";
+import { store } from "../reduxConfig/store";
 import "../style.css";
 import {
   updateScreenSize,
@@ -12,6 +14,7 @@ import {
   updateGameState,
   updateCurrentScore,
   updateAsteroidCount,
+  loadPreviousGame,
   updateTopScore
 } from "../reduxConfig/actions";
 
@@ -32,9 +35,6 @@ class ViewPort extends React.Component {
     this.projectiles = [];
   }
 
-  handleResize = () => {
-    this.props.updateScreenSize(window.innerWidth, window.innerHeight, 1);
-  };
 
   handleKeys = (value, e) => {
     e.preventDefault();
@@ -49,30 +49,40 @@ class ViewPort extends React.Component {
     });
   };
 
-  componentDidMount = () => {
+
+  handleResize = () => {
+    this.props.updateScreenSize(window.innerWidth, window.innerHeight, 1);
+  };
+
+
+  componentWillMount = () => {
+    requestAnimationFrame(() => {
+      this.update();
+    });
+  };
+
+  startNewGame = () => {
+    this.props.updateGameState(true);
+    this.props.updateCurrentScore(0);
+    this.handleResize();
+    this.initializeControls();
+    this.setState({ context: this.refs.canvas.getContext("2d") });
+    this.createShip(this.props.screen.width / 2, this.props.screen.height / 2);
+    this.asteroids = [];
+    this.generateAsteroids(this.props.asteroidCount);
+  };
+
+  initializeControls = () => {
     window.addEventListener("keyup", this.handleKeys.bind(this, false));
     window.addEventListener("keydown", this.handleKeys.bind(this, true));
     window.addEventListener("resize", this.handleResize.bind(this, false));
-
-    this.setState({ context: this.refs.canvas.getContext("2d") });
-
-    // this.startNewGame();
-    // requestAnimationFrame(() => {
-    //   this.update();
-    // });
-  };
-
-  componentWillUnmount = () => {
-    window.removeEventListener("keyup", this.handleKeys);
-    window.removeEventListener("keydown", this.handleKeys);
-    window.removeEventListener("resize", this.handleResize);
   };
 
   update = () => {
     const context = this.state.context;
-    if (this.props.inGame !== "paused") {
+    if (this.props.inGame && this.props.inGame !== "paused") {
       context.save();
-      // context.scale(this.props.screen.ratio, this.props.screen.ratio);
+      context.scale(this.props.screen.ratio, this.props.screen.ratio);
       context.fillStyle = "red";
       context.fillRect(0, 0, this.props.screen.width, this.props.screen.height);
 
@@ -102,60 +112,52 @@ class ViewPort extends React.Component {
     }
   };
 
-  startNewGame = () => {
-    this.props.updateGameState(true);
-    this.props.updateCurrentScore(0);
-
+  createShip = (x, y) => {
     let spaceShip = new SpaceShip({
       position: {
-        x: this.props.screen.width / 2,
-        y: this.props.screen.height / 2
+        x: x,
+        y: y
       },
       create: this.createCanvasObject.bind(this),
       onDie: this.gameOver.bind(this)
     });
     this.createCanvasObject(spaceShip, "spaceShip");
-    this.asteroids = [];
-    this.generateAsteroids(this.props.asteroidCount);
-  };
-
-  gameOver = () => {
-    this.props.updateGameState(false);
-
-    if (this.props.currentScore > this.state.topScore) {
-      this.props.updateTopScore(this.props.currentScore);
-      localStorage["topscore"] = this.props.currentScore;
-    }
   };
 
   generateAsteroids = count => {
     let spaceShip = this.spaceShip[0];
     for (let i = 0; i < count; i++) {
-      let asteroid = new Asteroid({
-        size: 60,
-        position: {
-          x: randomNumBetweenExcluding(
-            0,
-            this.props.screen.width,
-            spaceShip.position.x - 60,
-            spaceShip.position.x + 60
-          ),
-          y: randomNumBetweenExcluding(
-            0,
-            this.props.screen.height,
-            spaceShip.position.y - 60,
-            spaceShip.position.y + 60
-          )
-        },
-        create: this.createCanvasObject.bind(this),
-        addScore: this.addScore.bind(this)
-      });
-      this.createCanvasObject(asteroid, "asteroids");
+      const x = randomNumBetweenExcluding(
+        0,
+        this.props.screen.width,
+        spaceShip.position.x - 60,
+        spaceShip.position.x + 60
+      );
+      const y = randomNumBetweenExcluding(
+        0,
+        this.props.screen.height,
+        spaceShip.position.y - 60,
+        spaceShip.position.y + 60
+      )
+      this.createAsteroid(x, y);
     }
   };
 
-  createCanvasObject = (item, type) => {
-    this[type].push(item);
+  createAsteroid = (x, y) => {
+    let asteroid = new Asteroid({
+      size: 60,
+      position: {
+        x: x,
+        y: y
+      },
+      create: this.createCanvasObject.bind(this),
+      addScore: this.addScore.bind(this)
+    });
+    this.createCanvasObject(asteroid, "asteroids");
+  };
+
+  createCanvasObject = (item, itemType) => {
+    this[itemType].push(item);
   };
 
   updateObjects = (items, itemType) => {
@@ -182,39 +184,77 @@ class ViewPort extends React.Component {
     }
   };
 
+  gameOver = () => {
+    this.spaceShip = [];
+    this.asteroids = [];
+    this.projectiles = [];
+
+    console.log('gameover')
+
+    window.removeEventListener("keyup", this.handleKeys);
+    window.removeEventListener("keydown", this.handleKeys);
+    window.removeEventListener("resize", this.handleResize);
+
+    if (this.props.currentScore > this.props.topScore) {
+      this.props.updateTopScore(this.props.currentScore);
+      localStorage.setItem("topscore", this.props.currentScore);
+    }
+    this.props.updateGameState(false);
+  };
+
+  saveGame = playerName => {
+    let savedStates = localStorage.getItem("savedStates")
+      ? JSON.parse(localStorage.getItem("savedStates"))
+      : [];
+    const saveData = {
+      date: new Date().toLocaleDateString(),
+      asteroids: this.asteroids,
+      spaceShip: this.spaceShip,
+      projectiles: this.projectiles,
+      context: this.state.context
+    };
+    if (!savedStates.filter(state => state.playerName === playerName).length) {
+      savedStates = [{ ...store.getState(), ...saveData }, ...savedStates];
+      localStorage.setItem("savedStates", JSON.stringify(savedStates));
+    }
+  };
+
+  loadGame = save => {
+    this.initializeControls();
+    this.spaceShip = [];
+    this.asteroids = [];
+
+    for(let i = 0; i < save.asteroidCount; i++){
+      this.createAsteroid(save.asteroids[i].position.x, save.asteroids[i].position.y)
+    }
+    console.log(this.asteroids);
+    this.props.loadPreviousGame(save);
+    this.createShip(save.spaceShip[0].position.x, save.spaceShip[0].position.y);
+    this.setState({ context: this.refs.canvas.getContext("2d") });
+  };
+
   render = () => {
-    // console.log(this.spaceShip);
-    // console.log(this.asteroids);
-    // let endgame;
-    // let message;
-
-    // if (this.props.currentScore <= 0) {
-    //   message = "That's rough dog";
-    // } else if (this.props.currentScore >= this.state.topScore) {
-    //   message = "New best score: " + this.props.currentScore;
-    // } else {
-    //   message = this.props.currentScore;
-    // }
-
-    // if (!this.props.inGame) {
-    //   endgame = (
-    //     <div className="endgame">
-    //       <p>{message}</p>
-    //       <button onClick={this.startNewGame.bind(this)}>Try Again</button>
-    //     </div>
-    //   );
-    // }
     return (
       <div>
-        {/* {endgame} */}
-        {this.props.inGame === false && <StartScreen />}
-        {this.props.inGame === "paused" && <PauseMenu />}
+        {this.state.context === null && (
+          <div className="centeredMenu">
+            <StartScreen loadGame={this.loadGame} onClick={this.startNewGame} />
+          </div>
+        )}
+        {this.props.inGame === "paused" && (
+          <div className="centeredMenu">
+            <PauseMenu loadGame={this.loadGame} saveGame={this.saveGame} />
+          </div>
+        )}
+        {!this.props.inGame && this.state.context != null && (
+          <EndGameMenu onClick={this.startNewGame} />
+        )}
         <span className="score current-score">
           Score: {this.props.currentScore}
         </span>
         <span className="score top-score">Best: {this.props.topScore}</span>
         <span className="controls">
-          To Move: [◄][▲][▼][►] To Shoot: [SPACE]
+          To Move: ◄  ▲ ▼  ► To Shoot: [SPACE]
         </span>
         <canvas
           ref="canvas"
@@ -242,7 +282,8 @@ const mapDispatchToProps = dispatch => ({
   updateGameState: gameState => dispatch(updateGameState(gameState)),
   updateCurrentScore: score => dispatch(updateCurrentScore(score)),
   updateAsteroidCount: count => dispatch(updateAsteroidCount(count)),
-  updateTopScore: score => dispatch(updateTopScore(score))
+  updateTopScore: score => dispatch(updateTopScore(score)),
+  loadPreviousGame: gameState => dispatch(loadPreviousGame(gameState))
 });
 
 export default connect(
