@@ -9,7 +9,7 @@ const EndGameMenu = ({currentScore, topScore, onClick}) =>{
     } else if (currentScore >= topScore) {
       message = "New best score: " + currentScore;
     } else {
-      message = "Good Game!" + currentScore;
+      message = "Good Game! " + currentScore;
     }
     return(
         <div className="centeredMenu">

@@ -88,7 +88,6 @@ class ViewPort extends React.Component {
   gameLoop = () => {
     const context = this.state.context;
     context.save();
-    //context.scale(this.props.screen.ratio, this.props.screen.ratio);
     let backdrop = new Image();
     backdrop.src = BackDrop;
     let pattern = context.createPattern(backdrop,'repeat')
