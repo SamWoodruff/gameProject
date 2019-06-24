@@ -35,7 +35,6 @@ class ViewPort extends React.Component {
     this.projectiles = [];
   }
 
-
   handleKeys = (value, e) => {
     e.preventDefault();
     let keys = this.state.keys;
@@ -49,11 +48,9 @@ class ViewPort extends React.Component {
     });
   };
 
-
   handleResize = () => {
     this.props.updateScreenSize(window.innerWidth, window.innerHeight, 1);
   };
-
 
   componentWillMount = () => {
     requestAnimationFrame(() => {
@@ -79,30 +76,34 @@ class ViewPort extends React.Component {
   };
 
   update = () => {
-    const context = this.state.context;
     if (this.props.inGame && this.props.inGame !== "paused") {
-      context.save();
-      context.scale(this.props.screen.ratio, this.props.screen.ratio);
-      context.fillStyle = "red";
-      context.fillRect(0, 0, this.props.screen.width, this.props.screen.height);
-
-      if (this.asteroids.length === 0) {
-        const newCount = this.props.asteroidCount + Math.random() * (3 - 1) + 1;
-        this.props.updateAsteroidCount(newCount);
-        this.generateAsteroids(newCount);
-      }
-
-      this.handleCollisionDetection(this.projectiles, this.asteroids);
-      this.handleCollisionDetection(this.spaceShip, this.asteroids);
-
-      this.updateObjects(this.asteroids, "asteroids");
-      this.updateObjects(this.projectiles, "projectiles");
-      this.updateObjects(this.spaceShip, "spaceShip");
-      context.restore();
+      this.gameLoop();
     }
     requestAnimationFrame(() => {
       this.update();
     });
+  };
+
+  gameLoop = () => {
+    const context = this.state.context;
+    context.save();
+    //context.scale(this.props.screen.ratio, this.props.screen.ratio);
+    context.fillStyle = "red";
+    context.fillRect(0, 0, this.props.screen.width, this.props.screen.height);
+
+    if (this.asteroids.length === 0) {
+      const newCount = this.props.asteroidCount + Math.random() * (3 - 1) + 1;
+      this.props.updateAsteroidCount(newCount);
+      this.generateAsteroids(newCount);
+    }
+
+    this.handleCollisionDetection(this.projectiles, this.asteroids);
+    this.handleCollisionDetection(this.spaceShip, this.asteroids);
+
+    this.updateObjects(this.asteroids, "asteroids");
+    this.updateObjects(this.projectiles, "projectiles");
+    this.updateObjects(this.spaceShip, "spaceShip");
+    context.restore();
   };
 
   addScore = points => {
@@ -138,7 +139,7 @@ class ViewPort extends React.Component {
         this.props.screen.height,
         spaceShip.position.y - 60,
         spaceShip.position.y + 60
-      )
+      );
       this.createAsteroid(x, y);
     }
   };
@@ -189,7 +190,6 @@ class ViewPort extends React.Component {
     this.asteroids = [];
     this.projectiles = [];
 
-    console.log('gameover')
 
     window.removeEventListener("keyup", this.handleKeys);
     window.removeEventListener("keydown", this.handleKeys);
@@ -213,10 +213,18 @@ class ViewPort extends React.Component {
       projectiles: this.projectiles,
       context: this.state.context
     };
+
     if (!savedStates.filter(state => state.playerName === playerName).length) {
       savedStates = [{ ...store.getState(), ...saveData }, ...savedStates];
       localStorage.setItem("savedStates", JSON.stringify(savedStates));
     }
+
+    savedStates.forEach((save, index) => {
+      if (save.playerName === playerName) {
+        savedStates[index] = { ...store.getState(), ...saveData };
+      }
+    });
+    localStorage.setItem("savedStates", JSON.stringify(savedStates));
   };
 
   loadGame = save => {
@@ -224,13 +232,17 @@ class ViewPort extends React.Component {
     this.spaceShip = [];
     this.asteroids = [];
 
-    for(let i = 0; i < save.asteroidCount; i++){
-      this.createAsteroid(save.asteroids[i].position.x, save.asteroids[i].position.y)
+    for (let i = 0; i < save.asteroidCount; i++) {
+      this.createAsteroid(
+        save.asteroids[i].position.x,
+        save.asteroids[i].position.y
+      );
     }
-    console.log(this.asteroids);
     this.props.loadPreviousGame(save);
     this.createShip(save.spaceShip[0].position.x, save.spaceShip[0].position.y);
-    this.setState({ context: this.refs.canvas.getContext("2d") });
+    this.setState({ context: this.refs.canvas.getContext("2d") }, () =>
+      this.gameLoop()
+    );
   };
 
   render = () => {
@@ -253,9 +265,7 @@ class ViewPort extends React.Component {
           Score: {this.props.currentScore}
         </span>
         <span className="score top-score">Best: {this.props.topScore}</span>
-        <span className="controls">
-          To Move: ◄  ▲ ▼  ► To Shoot: [SPACE]
-        </span>
+        <span className="controls">To Move: ◄ ▲ ▼ ► To Shoot: [SPACE]</span>
         <canvas
           ref="canvas"
           width={this.props.screen.width * this.props.screen.ratio}

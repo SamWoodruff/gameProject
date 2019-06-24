@@ -14,15 +14,15 @@ const initialState = {
   screen: {
     width: window.innerWidth,
     height: window.innerHeight,
-    ratio: window.devicePixelRatio || 1,
+    ratio: window.devicePixelRatio || 1
   },
   asteroidCount: 3,
   currentScore: 0,
   topScore: localStorage["topscore"] || 0,
   inGame: false,
-  selectedShip: '',
-  playerName:'',
-  blasters: ['quickshot','spreadShot','doubleShot','wrapShot']
+  selectedShip: "",
+  playerName: "",
+  blasters: ["quickshot", "spreadShot", "doubleShot", "wrapShot"]
 };
 
 export const rootReducer = (state = initialState, action) => {
@@ -43,35 +43,41 @@ export const rootReducer = (state = initialState, action) => {
         inGame: action.payload
       };
     case UPDATE_CURRENT_SCORE:
-      return{
+      return {
         ...state,
-        currentScore:action.payload
-      }
+        currentScore: action.payload
+      };
     case UPDATE_TOP_SCORE:
-      return{
+      return {
         ...state,
         topScore: action.payload
-      }
+      };
     case UPDATE_ASTEROID_COUNT:
-      return{
+      return {
         ...state,
-        asteroidCount:action.payload
-      }
+        asteroidCount: action.payload
+      };
     case CHANGE_SHIP:
-      return{
+      return {
         ...state,
         selectedShip: action.payload
-      }
+      };
     case UPDATE_PLAYER_NAME:
-      return{
+      return {
         ...state,
         playerName: action.payload
-      }
+      };
     case LOAD_PREVIOUS_GAME:
-      console.log('PAYLOAD',action.payload)
-      return{
-        ...action.payload
-      }
+      return {
+        screen: action.payload.screen,
+        asteroidCount: action.payload.asteroidCount,
+        currentScore: action.payload.currentScore,
+        topScore: action.payload.topScore,
+        inGame: action.payload.inGame,
+        selectedShip: action.payload.selectedShip,
+        playerName: action.payload.playerName,
+        blasters: action.payload.blasters
+      };
     default:
       return { ...state };
   }

@@ -46,6 +46,7 @@ class SpaceShip {
     if (state.keys.right) {
       this.rotate("RIGHT");
     }
+    
     if (state.keys.space && Date.now() - this.lastShot > 300) {
       const projectile = new Projectile({ ship: this });
       this.create(projectile, "projectiles");
