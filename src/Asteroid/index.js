@@ -1,5 +1,6 @@
 import { asteroidVertices, randomNumBetween } from "../math";
 import { store } from "../reduxConfig/store";
+import AsteroidTexture from './asteroid.jpeg'
 class Asteroid {
   constructor(args) {
     this.position = args.position;
@@ -60,14 +61,17 @@ class Asteroid {
     context.save();
     context.translate(this.position.x, this.position.y);
     context.rotate((this.rotation * Math.PI) / 180);
-    context.strokeStyle = "black";
-    context.lineWidth = 4;
+    // context.strokeStyle = "black";
+    // context.lineWidth = 4;
     context.beginPath();
     context.moveTo(0, -this.radius);
     for (let i = 1; i < this.vertices.length; i++) {
       context.lineTo(this.vertices[i].x, this.vertices[i].y);
     }
-    context.fillStyle = "#FFA500";
+    let texture = new Image();
+    texture.src = AsteroidTexture;
+    context.fillStyle = context.createPattern(texture,"repeat");
+    context.fill()
     context.closePath();
     context.stroke();
     context.restore();

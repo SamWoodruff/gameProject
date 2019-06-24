@@ -2,6 +2,7 @@ canvas {
   position: absolute;
   width: 100%;
   height: 100%;
+  background-color:back;
 }
 .current-score {
   left: 20px;
@@ -16,6 +17,7 @@ canvas {
   z-index: 1;
   font-size: 20px;
   right: 20px;
+  color: white;
 }
 .controls {
   display: block;
@@ -27,6 +29,7 @@ canvas {
   font-size: 11px;
   text-align: center;
   line-height: 1.6;
+  color:white;
 }
 
 .shipSelector{
@@ -40,6 +43,11 @@ button{
   margin:10px;
 }
 
+.background{
+  background-color: black;
+  width: 100%;
+  height: 100%;
+}
 .centeredMenu{
   position: absolute;
   top: 50%;
@@ -48,5 +56,6 @@ button{
   padding: 16px;
   z-index: 1;
   text-align: center;
-  background: rgba(100, 100, 100, 0.5)
+  background: rgba(100, 100, 100, 0.5);
+  color: white;
 }

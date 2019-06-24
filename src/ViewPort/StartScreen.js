@@ -19,6 +19,7 @@ const StartScreen = ({ onClick, playerName, updatePlayerName,loadGame }) => {
         value={playerName}
         onChange={e => updatePlayerName(e.target.value)}
       />
+      
       <ShipSelector />
       <button onClick={()=>setShowLoadMenu(!showLoadMenu)}>Load</button>
       {showLoadMenu ? <LoadGame onClick={loadGame}/> : null}

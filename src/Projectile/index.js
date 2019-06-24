@@ -41,7 +41,7 @@ class Projectile {
     context.save();
     context.translate(this.position.x, this.position.y);
     context.rotate((this.rotation * Math.PI) / 180);
-    context.fillStyle = "black";
+    context.fillStyle = "white";
     context.lineWidth = 5;
     context.beginPath();
     context.arc(0, 0, 2, 0, 2 * Math.PI);

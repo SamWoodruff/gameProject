@@ -7,7 +7,7 @@ class SpaceShip {
       x: 0,
       y: 0
     };
-    this.rotation = 0;
+    this.rotation = args.rotation;
     this.rotationSpeed = 6;
     this.speed = 0.15;
     this.inertia = 1;

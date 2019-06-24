@@ -6,6 +6,7 @@ import { randomNumBetweenExcluding } from "../math";
 import PauseMenu from "./PauseMenu";
 import StartScreen from "./StartScreen";
 import EndGameMenu from "./EndGameMenu";
+import BackDrop from './backdrop.gif'
 import { store } from "../reduxConfig/store";
 import "../style.css";
 import {
@@ -63,10 +64,10 @@ class ViewPort extends React.Component {
     this.props.updateCurrentScore(0);
     this.handleResize();
     this.initializeControls();
-    this.setState({ context: this.refs.canvas.getContext("2d") });
-    this.createShip(this.props.screen.width / 2, this.props.screen.height / 2);
+    this.createShip(this.props.screen.width / 2, this.props.screen.height / 2, 0);
     this.asteroids = [];
     this.generateAsteroids(this.props.asteroidCount);
+    this.setState({ context: this.refs.canvas.getContext("2d") });
   };
 
   initializeControls = () => {
@@ -88,8 +89,12 @@ class ViewPort extends React.Component {
     const context = this.state.context;
     context.save();
     //context.scale(this.props.screen.ratio, this.props.screen.ratio);
-    context.fillStyle = "red";
-    context.fillRect(0, 0, this.props.screen.width, this.props.screen.height);
+    let backdrop = new Image();
+    backdrop.src = BackDrop;
+    let pattern = context.createPattern(backdrop,'repeat')
+    context.rect(0, 0, this.props.screen.width, this.props.screen.height);
+    context.fillStyle = pattern;
+    context.fill();
 
     if (this.asteroids.length === 0) {
       const newCount = this.props.asteroidCount + Math.random() * (3 - 1) + 1;
@@ -113,12 +118,13 @@ class ViewPort extends React.Component {
     }
   };
 
-  createShip = (x, y) => {
+  createShip = (x, y, rot) => {
     let spaceShip = new SpaceShip({
       position: {
         x: x,
         y: y
       },
+      rotation:rot,
       create: this.createCanvasObject.bind(this),
       onDie: this.gameOver.bind(this)
     });
@@ -239,7 +245,7 @@ class ViewPort extends React.Component {
       );
     }
     this.props.loadPreviousGame(save);
-    this.createShip(save.spaceShip[0].position.x, save.spaceShip[0].position.y);
+    this.createShip(save.spaceShip[0].position.x, save.spaceShip[0].position.y, save.spaceShip[0].rotation);
     this.setState({ context: this.refs.canvas.getContext("2d") }, () =>
       this.gameLoop()
     );
@@ -266,7 +272,8 @@ class ViewPort extends React.Component {
         </span>
         <span className="score top-score">Best: {this.props.topScore}</span>
         <span className="controls">To Move: ◄ ▲ ▼ ► To Shoot: [SPACE]</span>
-        <canvas
+        <canvas 
+          className="background"
           ref="canvas"
           width={this.props.screen.width * this.props.screen.ratio}
           height={this.props.screen.height * this.props.screen.ratio}
