@@ -7,7 +7,8 @@ import {
   CHANGE_SHIP,
   UPDATE_PLAYER_NAME,
   LOAD_PREVIOUS_GAME,
-  UPDATE_TOP_SCORE
+  UPDATE_TOP_SCORE,
+  UPDATE_EQUIPPED_WEAPON
 } from "./actions";
 
 const initialState = {
@@ -22,7 +23,7 @@ const initialState = {
   inGame: false,
   selectedShip: "",
   playerName: "",
-  blasters: ["quickshot", "spreadShot", "doubleShot", "wrapShot"]
+  selectedWeapon: { speed: 300, wrap: false }
 };
 
 export const rootReducer = (state = initialState, action) => {
@@ -77,6 +78,11 @@ export const rootReducer = (state = initialState, action) => {
         selectedShip: action.payload.selectedShip,
         playerName: action.payload.playerName,
         blasters: action.payload.blasters
+      };
+    case UPDATE_EQUIPPED_WEAPON:
+      return {
+        ...state,
+        selectedWeapon: action.payload
       };
     default:
       return { ...state };

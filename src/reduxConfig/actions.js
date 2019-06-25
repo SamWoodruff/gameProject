@@ -55,3 +55,9 @@ export const loadPreviousGame = state => ({
   type: LOAD_PREVIOUS_GAME,
   payload: state
 });
+
+export const UPDATE_EQUIPPED_WEAPON = "UPDATE_EQUIPPED_WEAPON"
+export const updateEquippedWeapon = weapon =>({
+  type:UPDATE_EQUIPPED_WEAPON,
+  payload:weapon
+})

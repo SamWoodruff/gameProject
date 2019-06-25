@@ -2,10 +2,18 @@ import React, {useState} from "react";
 import ShipSelector from "./ShipSelector";
 import LoadGame from './LoadMenu'
 import { connect } from "react-redux";
+import { store } from '../reduxConfig/store'
 import { updatePlayerName, updateGameState } from "../reduxConfig/actions";
 
-const StartScreen = ({ onClick, playerName, updatePlayerName,loadGame }) => {
+const StartScreen = ({ startGame, playerName, updatePlayerName,loadGame }) => {
   const [showLoadMenu, setShowLoadMenu] = useState(false);
+
+  const start = () =>{
+    if(store.getState().playerName && store.getState().selectedShip){
+      startGame();
+    }
+  }
+
   return (
     <div className="menu">
       Start Screen
@@ -21,10 +29,11 @@ const StartScreen = ({ onClick, playerName, updatePlayerName,loadGame }) => {
       />
       
       <ShipSelector />
+      
       <button onClick={()=>setShowLoadMenu(!showLoadMenu)}>Load</button>
       {showLoadMenu ? <LoadGame onClick={loadGame}/> : null}
       <br/>
-      <button onClick={() => onClick()}>Start</button>
+      <button onClick={() => start()}>Start</button>
     </div>
   );
 };

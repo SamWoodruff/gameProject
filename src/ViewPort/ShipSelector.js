@@ -1,13 +1,28 @@
-import React from "react";
+import React, { useState } from "react";
 import { connect } from "react-redux";
 import { changeShip } from "../reduxConfig/actions";
 import { ships } from "../SpaceShip/shipData";
+import { store } from "../reduxConfig/store";
 const ShipSelector = ({ changeShip }) => {
+  const [selectedShip, setSelectedShip] = useState(-1);
+  const selectShip = (ship, index) =>{
+    setSelectedShip(index)
+    changeShip(ship.src)
+  }
+  console.log(selectedShip)
   return (
     <div className="shipSelector">
       <br />
-      {ships.map(ship => (
-        <div key={ship.id} onClick={() => changeShip(ship.src)}>
+      {ships.map((ship,index) => (
+        <div
+          className={
+            selectedShip === index ? "selected" : "unselected"
+          }
+          key={ship.id}
+          onClick={
+            () => selectShip(ship,index)
+          }
+        >
           <img src={ship.src} alt="" />
         </div>
       ))}

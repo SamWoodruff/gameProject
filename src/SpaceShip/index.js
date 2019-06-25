@@ -7,7 +7,7 @@ class SpaceShip {
       x: 0,
       y: 0
     };
-    this.rotation = args.rotation;
+    this.rotation = 45;
     this.rotationSpeed = 6;
     this.speed = 0.15;
     this.inertia = 1;
@@ -38,7 +38,7 @@ class SpaceShip {
 
   display = state => {
     if (state.keys.up) {
-      this.accelerate(.5);
+      this.accelerate(0.5);
     }
     if (state.keys.left) {
       this.rotate("LEFT");
@@ -46,8 +46,11 @@ class SpaceShip {
     if (state.keys.right) {
       this.rotate("RIGHT");
     }
-    
-    if (state.keys.space && Date.now() - this.lastShot > 300) {
+
+    if (
+      state.keys.space &&
+      Date.now() - this.lastShot > store.getState().selectedWeapon.speed
+    ) {
       const projectile = new Projectile({ ship: this });
       this.create(projectile, "projectiles");
       this.lastShot = Date.now();
@@ -74,13 +77,10 @@ class SpaceShip {
 
     const context = state.context;
     context.save();
-    
+
     let sprite = new Image();
     sprite.src = store.getState().selectedShip;
-    context.translate(
-      this.position.x,
-      this.position.y
-    );
+    context.translate(this.position.x, this.position.y);
     context.rotate((this.rotation * Math.PI) / 180);
     context.drawImage(
       sprite,

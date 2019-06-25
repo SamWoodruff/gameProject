@@ -8,16 +8,34 @@ const LoadGame = ({ onClick, loadPreviousGame }) => {
       ? JSON.parse(localStorage.getItem("savedStates"))
       : []
   );
-
+  const [selectedLoad, setSelectedLoad] = useState(-1);
+  const selectLoad = (save, index) => {
+    setSelectedLoad(index);
+    onClick(save);
+  };
   return (
     <div>
-      {saves.map(save => (
-        <div>
-          <span onClick={() => onClick(save)}>
-            {save.playerName}
-            {save.date}
+      {saves.map((save, index) => (
+        <div 
+        className={
+          selectedLoad === index ? "selectedLoadInfo" : "loadInfo"
+        }
+      >
+          <span onClick={() => selectLoad(save, index)}>
+              <div>
+                {save.playerName}
+                <br />
+                {save.date}
+              </div>
           </span>
-          <button onClick={() => removeSave(save, setSaves)}>-</button>
+          <div>
+            <button
+              className="minus"
+              onClick={() => removeSave(save, setSaves)}
+            >
+              -
+            </button>
+          </div>
         </div>
       ))}
     </div>
