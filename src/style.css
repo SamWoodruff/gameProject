@@ -47,7 +47,11 @@ canvas {
   height: 100px;
   border: 3px solid black; 
 }
-
+.selectedWeapon{
+  color:black;
+  background-color: orange;
+  width:140px;
+}
 .unselected{
   padding:20px;
 }

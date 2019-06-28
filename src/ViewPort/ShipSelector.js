@@ -1,15 +1,14 @@
 import React, { useState } from "react";
 import { connect } from "react-redux";
 import { changeShip } from "../reduxConfig/actions";
-import { ships } from "../SpaceShip/shipData";
-import { store } from "../reduxConfig/store";
+import { ships } from "../SpaceShip/images/shipData";
+
 const ShipSelector = ({ changeShip }) => {
   const [selectedShip, setSelectedShip] = useState(-1);
   const selectShip = (ship, index) =>{
     setSelectedShip(index)
     changeShip(ship.src)
   }
-  console.log(selectedShip)
   return (
     <div className="shipSelector">
       <br />

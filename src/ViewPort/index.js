@@ -1,15 +1,16 @@
 import React from "react";
 import SpaceShip from "../SpaceShip/";
+import Alien from "../Alien";
 import Asteroid from "../Asteroid/";
-import { connect } from "react-redux";
-import { randomNumBetweenExcluding } from "../math";
 import PauseMenu from "./PauseMenu";
 import StartScreen from "./StartScreen";
 import EndGameMenu from "./EndGameMenu";
-import BackDrop from "./backdrop.gif";
+import BackDrop from "../backdrop.gif";
+import WeaponsHUD from "./WeaponsHUD";
 import { store } from "../reduxConfig/store";
+import { blasters } from "../Projectile/blasterTypes";
 import "../style.css";
-import "./button.css";
+import "../button.css";
 import {
   updateScreenSize,
   updateKeyValues,
@@ -20,6 +21,9 @@ import {
   updateTopScore,
   updateEquippedWeapon
 } from "../reduxConfig/actions";
+
+import { connect } from "react-redux";
+import { randomNumBetweenExcluding } from "../math";
 
 class ViewPort extends React.Component {
   constructor() {
@@ -36,6 +40,7 @@ class ViewPort extends React.Component {
     this.spaceShip = [];
     this.asteroids = [];
     this.projectiles = [];
+    this.aliens = [];
   }
 
   handleKeys = (value, e) => {
@@ -46,9 +51,6 @@ class ViewPort extends React.Component {
     if (e.keyCode === 38) keys.up = value;
     if (e.keyCode === 32) keys.space = value;
     if (e.keyCode === 27) this.props.updateGameState("paused");
-    if (e.keyCode === 49) this.props.updateEquippedWeapon({speed:300, wrap: false});
-    if (e.keyCode === 50) this.props.updateEquippedWeapon({speed:75, wrap: false});
-    if (e.keyCode === 51) this.props.updateEquippedWeapon({speed:200, wrap: true});
     this.setState({
       keys: keys
     });
@@ -66,13 +68,15 @@ class ViewPort extends React.Component {
 
   startNewGame = () => {
     this.props.updateGameState(true);
+    this.props.updateEquippedWeapon(blasters[0]);
     this.props.updateCurrentScore(0);
+
     this.handleResize();
     this.initializeControls();
     this.createShip(
       this.props.screen.width / 2,
       this.props.screen.height / 2,
-      180
+      0
     );
     this.asteroids = [];
     this.generateAsteroids(this.props.asteroidCount);
@@ -110,34 +114,98 @@ class ViewPort extends React.Component {
       this.generateAsteroids(newCount);
     }
 
-    this.handleCollisionDetection(this.projectiles, this.asteroids);
+    this.aliens.forEach(alien =>
+      alien.updateKnownPlayerLocation(this.spaceShip[0].position)
+    );
+
     this.handleCollisionDetection(this.spaceShip, this.asteroids);
-    // this.handleCollisionDetection(this.asteroids, this.asteroids);
+    this.handleCollisionDetection(this.spaceShip, this.aliens);
+    this.handleCollisionDetection(this.asteroids, this.aliens);
+    this.handleCollisionDetection(this.projectiles, this.asteroids);
+    this.handleCollisionDetection(this.projectiles, this.spaceShip);
+    this.handleCollisionDetection(this.spaceShip, this.aliens);
+    this.handleCollisionDetection(this.projectiles, this.aliens);
+
+    if (
+      this.props.currentScore + 1000 === 0 &&
+      this.props.currentScore !== 0 &&
+      this.aliens.length < 2 &&
+      this.spaceShip.length
+    ) {
+      this.generateAlien();
+    }
 
     this.updateObjects(this.asteroids, "asteroids");
     this.updateObjects(this.projectiles, "projectiles");
     this.updateObjects(this.spaceShip, "spaceShip");
+    this.updateObjects(this.aliens, "aliens");
     context.restore();
   };
 
   addScore = points => {
-    console.log();
     if (this.props.inGame) {
       this.props.updateCurrentScore(this.props.currentScore + points);
     }
   };
 
+  generateAlien = () => {
+    const spaceShip = this.spaceShip[0];
+    const x = randomNumBetweenExcluding(
+      0,
+      this.props.screen.width,
+      spaceShip.position.x - 100,
+      spaceShip.position.x + 100
+    );
+    const y = randomNumBetweenExcluding(
+      0,
+      this.props.screen.height,
+      spaceShip.position.y - 100,
+      spaceShip.position.y + 100
+    );
+    this.createAlien(x, y, 0);
+  };
+
   createShip = (x, y, rot) => {
     let spaceShip = new SpaceShip({
+      id: 1,
       position: {
         x: x,
         y: y
       },
       rotation: rot,
-      create: this.createCanvasObject.bind(this),
-      onDie: this.gameOver.bind(this)
+      create: this.createCanvasObject.bind(),
+      onDie: this.gameOver.bind()
     });
     this.createCanvasObject(spaceShip, "spaceShip");
+  };
+
+  createAlien = (x, y, rot) => {
+    let alien = new Alien({
+      id: 2,
+      position: {
+        x: x,
+        y: y
+      },
+      rotation: rot,
+      create: this.createCanvasObject.bind(),
+      playerPosition: this.spaceShip[0].position,
+      addScore: this.addScore.bind()
+    });
+    this.createCanvasObject(alien, "aliens");
+  };
+
+  createAsteroid = (x, y, radius, i) => {
+    let asteroid = new Asteroid({
+      size: radius,
+      id: store.getState().asteroidCount - i + 100,
+      position: {
+        x: x,
+        y: y
+      },
+      create: this.createCanvasObject.bind(),
+      addScore: this.addScore.bind()
+    });
+    this.createCanvasObject(asteroid, "asteroids");
   };
 
   generateAsteroids = count => {
@@ -155,21 +223,8 @@ class ViewPort extends React.Component {
         spaceShip.position.y - 60,
         spaceShip.position.y + 60
       );
-      this.createAsteroid(x, y);
+      this.createAsteroid(x, y, 75, i);
     }
-  };
-
-  createAsteroid = (x, y) => {
-    let asteroid = new Asteroid({
-      size: 60,
-      position: {
-        x: x,
-        y: y
-      },
-      create: this.createCanvasObject.bind(this),
-      addScore: this.addScore.bind(this)
-    });
-    this.createCanvasObject(asteroid, "asteroids");
   };
 
   createCanvasObject = (item, itemType) => {
@@ -187,13 +242,14 @@ class ViewPort extends React.Component {
   handleCollisionDetection = (items1, items2) => {
     for (let i = 0; i < items1.length; i++) {
       for (let k = 0; k < items2.length; k++) {
-        if (i !== k) {
-          const item1 = items1[i];
-          const item2 = items2[k];
-          const x = item1.position.x - item2.position.x;
-          const y = item1.position.y - item2.position.y;
-          var length = Math.sqrt(x * x + y * y);
-          if (length < item1.radius + item2.radius) {
+        const item1 = items1[i];
+        const item2 = items2[k];
+        const x = item1.position.x - item2.position.x;
+        const y = item1.position.y - item2.position.y;
+        var length = Math.sqrt(x * x + y * y);
+        if (length < item1.radius + item2.radius) {
+          if (item1.id !== item2.id) {
+            console.log("Object Destroyed");
             item1.destroy();
             item2.destroy();
           }
@@ -206,11 +262,11 @@ class ViewPort extends React.Component {
     this.spaceShip = [];
     this.asteroids = [];
     this.projectiles = [];
-
+    this.aliens = [];
     window.removeEventListener("keyup", this.handleKeys);
     window.removeEventListener("keydown", this.handleKeys);
     window.removeEventListener("resize", this.handleResize);
-
+    this.props.updateAsteroidCount(3);
     if (this.props.currentScore > this.props.topScore) {
       this.props.updateTopScore(this.props.currentScore);
       localStorage.setItem("topscore", this.props.currentScore);
@@ -227,7 +283,8 @@ class ViewPort extends React.Component {
       asteroids: this.asteroids,
       spaceShip: this.spaceShip,
       projectiles: this.projectiles,
-      context: this.state.context
+      context: this.state.context,
+      activeAsteroids: this.asteroids.length
     };
 
     if (!savedStates.filter(state => state.playerName === playerName).length) {
@@ -248,13 +305,16 @@ class ViewPort extends React.Component {
     this.spaceShip = [];
     this.asteroids = [];
 
-    for (let i = 0; i < save.asteroidCount; i++) {
+    for (let i = 0; i < save.activeAsteroids; i++) {
       this.createAsteroid(
         save.asteroids[i].position.x,
-        save.asteroids[i].position.y
+        save.asteroids[i].position.y,
+        save.asteroids[i].radius
       );
     }
+    this.props.updateAsteroidCount(save.asteroidCount);
     this.props.loadPreviousGame(save);
+    this.props.updateEquippedWeapon(save.selectedWeapon);
     this.createShip(
       save.spaceShip[0].position.x,
       save.spaceShip[0].position.y,
@@ -268,9 +328,12 @@ class ViewPort extends React.Component {
   render = () => {
     return (
       <div>
-        {this.state.context === null && (  
+        {this.state.context === null && (
           <div className="centeredMenu">
-            <StartScreen loadGame={this.loadGame} startGame={this.startNewGame} />
+            <StartScreen
+              loadGame={this.loadGame}
+              startGame={this.startNewGame}
+            />
           </div>
         )}
         {this.props.inGame === "paused" && (
@@ -283,6 +346,9 @@ class ViewPort extends React.Component {
         )}
         <span className="score current-score">
           Score: {this.props.currentScore}
+          <br />
+          <br />
+          <WeaponsHUD />
         </span>
         <span className="score top-score">Best: {this.props.topScore}</span>
         <span className="controls">To Move: ◄ ▲ ▼ ► To Shoot: [SPACE]</span>

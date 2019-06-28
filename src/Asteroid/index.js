@@ -3,6 +3,7 @@ import { store } from "../reduxConfig/store";
 import AsteroidTexture from './asteroid.jpeg'
 class Asteroid {
   constructor(args) {
+    this.id = args.id;
     this.position = args.position;
     this.velocity = {
       x: randomNumBetween(-1.5, 1.5),
@@ -11,10 +12,10 @@ class Asteroid {
     this.rotation = 0;
     this.rotationSpeed = randomNumBetween(-1, 1);
     this.radius = args.size;
-    this.points = (60 / this.radius) * 12;
+    this.points = 1000//Math.floor(this.radius / 2);
     this.create = args.create;
     this.addScore = args.addScore;
-    this.vertices = asteroidVertices(8, args.size);
+    this.vertices = asteroidVertices(15, args.size);
   }
 
   destroy = () => {
@@ -61,8 +62,6 @@ class Asteroid {
     context.save();
     context.translate(this.position.x, this.position.y);
     context.rotate((this.rotation * Math.PI) / 180);
-    // context.strokeStyle = "black";
-    // context.lineWidth = 4;
     context.beginPath();
     context.moveTo(0, -this.radius);
     for (let i = 1; i < this.vertices.length; i++) {

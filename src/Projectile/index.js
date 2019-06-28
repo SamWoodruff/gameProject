@@ -1,7 +1,5 @@
-import React from "react";
 import { rotatePoint } from "../math";
 import { store } from "../reduxConfig/store";
-import { singleShot, spreadShot } from "./projectileDrawings";
 class Projectile {
   constructor(args) {
     let posDelta = rotatePoint(
@@ -9,6 +7,7 @@ class Projectile {
       { x: 0, y: 0 },
       (args.ship.rotation * Math.PI) / 180
     );
+    this.id = args.ship.id
     this.position = {
       x: args.ship.position.x + posDelta.x,
       y: args.ship.position.y + posDelta.y
@@ -18,7 +17,7 @@ class Projectile {
       x: posDelta.x / 2,
       y: posDelta.y / 2
     };
-    this.radius = 4;
+    this.radius = 5;
     this.delete = false;
     setTimeout(() => this.destroy(), 3000);
   }

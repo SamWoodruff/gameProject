@@ -2,16 +2,17 @@ import Projectile from "../Projectile";
 import { store } from "../reduxConfig/store";
 class SpaceShip {
   constructor(args) {
+    this.id = args.id;
     this.position = args.position;
     this.velocity = {
       x: 0,
       y: 0
     };
-    this.rotation = 45;
+    this.rotation = 0;
     this.rotationSpeed = 6;
     this.speed = 0.15;
     this.inertia = 1;
-    this.radius = 20;
+    this.radius = 25;
     this.lastShot = 0;
     this.create = args.create;
     this.onDie = args.onDie;
