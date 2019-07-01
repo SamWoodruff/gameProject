@@ -2,7 +2,10 @@ canvas {
   position: absolute;
   width: 100%;
   height: 100%;
-  background-color:back;
+  background-color:black;
+}
+body{
+  background-color:black;
 }
 .current-score {
   left: 20px;
@@ -32,6 +35,19 @@ canvas {
   line-height: 1.6;
   color:white;
   font-family: "OCR A Std",monospace;
+}
+
+.playerName{
+  width:300px;
+  height:50px;
+  font-size: 50px;
+  font-family: "OCR A Std",monospace;
+}
+
+.leaderboard{
+  height:200px;
+  width:500px;
+  overflow: scroll
 }
 
 .shipSelector{

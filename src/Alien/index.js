@@ -1,4 +1,3 @@
-import { store } from "../reduxConfig/store";
 import Projectile from "../Projectile";
 import AlienSprite from '../Alien/alien.png';
 class Alien {
@@ -11,9 +10,9 @@ class Alien {
     };
     this.rotationSpeed = 6;
     this.speed = 1.5;
+    this.projectileColor = "red";
     this.inertia = 1;
     this.radius = 20;
-    this.lastShot = 0;
     this.create = args.create;
     this.addScore = args.addScore;
     this.points = 200;
@@ -21,7 +20,8 @@ class Alien {
     this.rotation = (Math.atan2(
       args.position.y - args.playerPosition.y ,
       args.position.x - args.playerPosition.x  
-    ) + 4.7) * 180/ Math.PI;
+    ) + 4.7) * 180/ Math.PI + 180;
+    this.lastShot = 0
   }
 
   destroy = () => {
@@ -45,11 +45,13 @@ class Alien {
     }
 
     if (
-      Date.now() - this.lastShot > 1000
+      Date.now() - this.lastShot > 5000
     ) {
       const projectile = new Projectile({ ship: this });
       this.create(projectile, "projectiles");
       this.lastShot = Date.now();
+    }else{
+      this.lastShot--
     }
 
     this.position.x += dx * this.speed;
@@ -58,15 +60,6 @@ class Alien {
       this.position.y - this.playerPosition.y ,
       this.position.x - this.playerPosition.x  
     ) + 4.7) * 180/ Math.PI;
-
-    // this.velocity.x *= this.inertia;
-    // this.velocity.y *= this.inertia;
-    // if (this.position.x > store.getState().screen.width) this.position.x = 0;
-    // else if (this.position.x < 0)
-    //   this.position.x = store.getState().screen.width;
-    // if (this.position.y > store.getState().screen.height) this.position.y = 0;
-    // else if (this.position.y < 0)
-    //   this.position.y = store.getState().screen.height;
 
     const context = state.context;
     context.save();

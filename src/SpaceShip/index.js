@@ -8,10 +8,11 @@ class SpaceShip {
       x: 0,
       y: 0
     };
+    this.projectileColor = "white";
     this.rotation = 0;
     this.rotationSpeed = 6;
-    this.speed = 0.15;
-    this.inertia = 1;
+    this.speed = 0.11;
+    this.inertia = .99;
     this.radius = 25;
     this.lastShot = 0;
     this.create = args.create;
@@ -49,7 +50,7 @@ class SpaceShip {
     }
 
     if (
-      state.keys.space &&
+      state.keys.shoot &&
       Date.now() - this.lastShot > store.getState().selectedWeapon.speed
     ) {
       const projectile = new Projectile({ ship: this });

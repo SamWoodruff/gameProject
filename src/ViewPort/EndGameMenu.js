@@ -1,4 +1,5 @@
 import React from 'react'
+import LeaderBoard from './LeaderBoard'
 import { connect } from 'react-redux'
 import { updateGameState } from '../reduxConfig/actions'
 const EndGameMenu = ({currentScore, topScore, onClick}) =>{
@@ -15,6 +16,7 @@ const EndGameMenu = ({currentScore, topScore, onClick}) =>{
         <div className="centeredMenu">
           <p>{message}</p>
           <button onClick={()=>onClick()}>Try Again</button>
+          <LeaderBoard show ={true}/>
         </div>
     )
 }

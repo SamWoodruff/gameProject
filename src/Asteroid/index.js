@@ -12,7 +12,7 @@ class Asteroid {
     this.rotation = 0;
     this.rotationSpeed = randomNumBetween(-1, 1);
     this.radius = args.size;
-    this.points = 1000//Math.floor(this.radius / 2);
+    this.points = Math.floor(this.radius * 2);
     this.create = args.create;
     this.addScore = args.addScore;
     this.vertices = asteroidVertices(15, args.size);

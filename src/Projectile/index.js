@@ -13,6 +13,7 @@ class Projectile {
       y: args.ship.position.y + posDelta.y
     };
     this.rotation = args.ship.rotation;
+    this.color = args.ship.projectileColor;
     this.velocity = {
       x: posDelta.x / 2,
       y: posDelta.y / 2
@@ -53,10 +54,10 @@ class Projectile {
     context.save();
     context.translate(this.position.x, this.position.y);
     context.rotate((this.rotation * Math.PI) / 180);
-    context.fillStyle = "white";
+    context.fillStyle = this.color;
     context.lineWidth = 5;
     context.beginPath();
-    context.arc(0, 0, 2, 0, 2 * Math.PI);
+    context.arc(0, 0, 5, 0, 5 * Math.PI);
     context.closePath();
     context.fill();
     context.restore();

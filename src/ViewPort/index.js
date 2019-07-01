@@ -7,6 +7,7 @@ import StartScreen from "./StartScreen";
 import EndGameMenu from "./EndGameMenu";
 import BackDrop from "../backdrop.gif";
 import WeaponsHUD from "./WeaponsHUD";
+import LeadBoard from './LeaderBoard'
 import { store } from "../reduxConfig/store";
 import { blasters } from "../Projectile/blasterTypes";
 import "../style.css";
@@ -34,23 +35,28 @@ class ViewPort extends React.Component {
         left: 0,
         right: 0,
         up: 0,
-        space: 0
+        shoot: 0
       }
     };
     this.spaceShip = [];
     this.asteroids = [];
     this.projectiles = [];
     this.aliens = [];
+    this.alienTracker = 0;
   }
 
   handleKeys = (value, e) => {
     e.preventDefault();
     let keys = this.state.keys;
-    if (e.keyCode === 37) keys.left = value;
-    if (e.keyCode === 39) keys.right = value;
-    if (e.keyCode === 38) keys.up = value;
-    if (e.keyCode === 32) keys.space = value;
+    if (e.keyCode === 65) keys.left = value;
+    if (e.keyCode === 68) keys.right = value;
+    if (e.keyCode === 87) keys.up = value;
+    if (e.keyCode === 32) keys.shoot = value;
     if (e.keyCode === 27) this.props.updateGameState("paused");
+    if (e.type === "mousedown" || e.type === "mouseup") {
+      keys.shoot = value;
+    }
+
     this.setState({
       keys: keys
     });
@@ -78,6 +84,7 @@ class ViewPort extends React.Component {
       this.props.screen.height / 2,
       0
     );
+    this.generateAlien();
     this.asteroids = [];
     this.generateAsteroids(this.props.asteroidCount);
     this.setState({ context: this.refs.canvas.getContext("2d") });
@@ -87,6 +94,8 @@ class ViewPort extends React.Component {
     window.addEventListener("keyup", this.handleKeys.bind(this, false));
     window.addEventListener("keydown", this.handleKeys.bind(this, true));
     window.addEventListener("resize", this.handleResize.bind(this, false));
+    window.addEventListener("mousedown", this.handleKeys.bind(this, true));
+    window.addEventListener("mouseup", this.handleKeys.bind(this, false));
   };
 
   update = () => {
@@ -108,38 +117,42 @@ class ViewPort extends React.Component {
     context.fillStyle = pattern;
     context.fill();
 
-    if (this.asteroids.length === 0) {
+    if (!this.asteroids.length) {
       const newCount = this.props.asteroidCount + Math.random() * (3 - 1) + 1;
       this.props.updateAsteroidCount(newCount);
       this.generateAsteroids(newCount);
     }
 
-    this.aliens.forEach(alien =>
-      alien.updateKnownPlayerLocation(this.spaceShip[0].position)
-    );
+    this.handleSpawnAliens();
 
     this.handleCollisionDetection(this.spaceShip, this.asteroids);
     this.handleCollisionDetection(this.spaceShip, this.aliens);
-    this.handleCollisionDetection(this.asteroids, this.aliens);
     this.handleCollisionDetection(this.projectiles, this.asteroids);
     this.handleCollisionDetection(this.projectiles, this.spaceShip);
     this.handleCollisionDetection(this.spaceShip, this.aliens);
     this.handleCollisionDetection(this.projectiles, this.aliens);
-
-    if (
-      this.props.currentScore + 1000 === 0 &&
-      this.props.currentScore !== 0 &&
-      this.aliens.length < 2 &&
-      this.spaceShip.length
-    ) {
-      this.generateAlien();
-    }
+    this.handleCollisionDetection(this.asteroids, this.aliens);
 
     this.updateObjects(this.asteroids, "asteroids");
     this.updateObjects(this.projectiles, "projectiles");
     this.updateObjects(this.spaceShip, "spaceShip");
     this.updateObjects(this.aliens, "aliens");
     context.restore();
+  };
+
+  handleSpawnAliens = () => {
+    if (this.aliens.length) {
+      this.aliens.forEach(alien =>
+        alien.updateKnownPlayerLocation(this.spaceShip[0].position)
+      );
+    }
+    if (this.alienTracker + 1000 <= this.props.currentScore) {
+      if (!this.aliens.length) {
+        this.generateAlien();
+        this.generateAlien();
+      }
+      this.alienTracker += 1000;
+    }
   };
 
   addScore = points => {
@@ -259,10 +272,12 @@ class ViewPort extends React.Component {
   };
 
   gameOver = () => {
+    this.props.updateGameState(false);
     this.spaceShip = [];
     this.asteroids = [];
     this.projectiles = [];
     this.aliens = [];
+    this.alienTracker = 0;
     window.removeEventListener("keyup", this.handleKeys);
     window.removeEventListener("keydown", this.handleKeys);
     window.removeEventListener("resize", this.handleResize);
@@ -271,7 +286,6 @@ class ViewPort extends React.Component {
       this.props.updateTopScore(this.props.currentScore);
       localStorage.setItem("topscore", this.props.currentScore);
     }
-    this.props.updateGameState(false);
   };
 
   saveGame = playerName => {
@@ -283,6 +297,7 @@ class ViewPort extends React.Component {
       asteroids: this.asteroids,
       spaceShip: this.spaceShip,
       projectiles: this.projectiles,
+      aliens: this.aliens,
       context: this.state.context,
       activeAsteroids: this.asteroids.length
     };
@@ -304,6 +319,7 @@ class ViewPort extends React.Component {
     this.initializeControls();
     this.spaceShip = [];
     this.asteroids = [];
+    this.aliens = [];
 
     for (let i = 0; i < save.activeAsteroids; i++) {
       this.createAsteroid(
@@ -320,6 +336,11 @@ class ViewPort extends React.Component {
       save.spaceShip[0].position.y,
       save.spaceShip[0].rotation
     );
+
+    save.aliens.forEach(alien =>
+      this.createAlien(alien.position.x, alien.position.y, alien.rotation)
+    );
+
     this.setState({ context: this.refs.canvas.getContext("2d") }, () =>
       this.gameLoop()
     );
@@ -350,8 +371,11 @@ class ViewPort extends React.Component {
           <br />
           <WeaponsHUD />
         </span>
+        <LeadBoard show={false}/>
         <span className="score top-score">Best: {this.props.topScore}</span>
-        <span className="controls">To Move: ◄ ▲ ▼ ► To Shoot: [SPACE]</span>
+        <span className="controls">
+          To Move: [W | A | S | D] To Shoot: [SPACE or LEFT MOUSE ]
+        </span>
         <canvas
           className="background"
           ref="canvas"
